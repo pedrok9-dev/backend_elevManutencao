@@ -29,7 +29,7 @@ const MovimentacaoEstoque = db.define('movimentacaoEstoque', {
   },
   idPedido: {
     type: DataTypes.INTEGER,
-    allowNull: true, // preenchido quando a saída estiver ligada a um pedido
+    allowNull: true,
     references: {
       model: 'pedidos',
       key: 'codPedido'

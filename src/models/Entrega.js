@@ -10,7 +10,7 @@ const Entrega = db.define('entrega', {
   idPedido: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    unique: true, // uma entrega principal por pedido na primeira versão
+    unique: true,
     references: {
       model: 'pedidos',
       key: 'codPedido'

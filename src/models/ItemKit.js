@@ -31,7 +31,7 @@ const ItemKit = db.define('itemKit', {
 }, {
   indexes: [{
     unique: true,
-    fields: ['idKit', 'idProduto'] // um produto não se repete na composição do mesmo kit
+    fields: ['idKit', 'idProduto'] 
   }],
   timestamps: false,
   tableName: 'itens_kit'

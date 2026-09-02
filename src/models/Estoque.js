@@ -10,7 +10,7 @@ const Estoque = db.define('estoque', {
   idProduto: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    unique: true, // garante o relacionamento 1:1
+    unique: true, 
     references: {
       model: 'produtos',
       key: 'codProduto'
@@ -20,7 +20,7 @@ const Estoque = db.define('estoque', {
     type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: 0,
-    validate: { min: 0 } // regra: estoque nunca fica negativo
+    validate: { min: 0 }
   },
   quantidade_minima: {
     type: DataTypes.INTEGER,

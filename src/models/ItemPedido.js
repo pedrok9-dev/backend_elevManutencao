@@ -50,7 +50,6 @@ const ItemPedido = db.define('itemPedido', {
   timestamps: false,
   tableName: 'itens_pedido',
   validate: {
-    // RN: o item deve apontar para produto OU kit, nunca para os dois nem para nenhum
     apenasProdutoOuKit() {
       const temProduto = this.idProduto !== null && this.idProduto !== undefined
       const temKit = this.idKit !== null && this.idKit !== undefined
