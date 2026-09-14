@@ -7,7 +7,6 @@ function validaEmail(email) {
 }
 
 function validaTelefone(telefone) {
-  // Aceita (11)9XXXX-XXXX ou 119XXXXYYYY
   const regex = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/
   return regex.test(telefone)
 }

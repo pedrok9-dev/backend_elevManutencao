@@ -1,9 +1,4 @@
-// Script opcional para popular o banco com dados de exemplo (categorias, fornecedor,
-// produtos, estoque e kits), com base no catálogo de demonstração do projeto.
-// Rode DEPOIS do "npm run sync" (as 12 tabelas precisam já existir).
 require('dotenv').config()
-// Mesma lógica do sync.js: usa a conexão "inteligente" (./src/db/conn), que funciona
-// tanto localmente (.env) quanto no Railway (DATABASE_URL / MYSQLHOST / etc.).
 const conn = require('./src/db/conn')
 
 const {
@@ -16,7 +11,6 @@ async function seed() {
   try {
     await conn.authenticate()
 
-    // -------- Usuário administrador --------
     const senhaAdmin = await hashSenha('admin123')
     await Usuario.findOrCreate({
       where: { email: 'admin@elevmanutencao.com.br' },
@@ -30,7 +24,6 @@ async function seed() {
       }
     })
 
-    // -------- Categorias --------
     const nomesCategorias = [
       ['Mecânica', 'Rolamentos, polias, roldanas, correias, guias, buchas, cabos e fixadores.'],
       ['Elétrica', 'Contatores, relés, fusíveis, disjuntores, bornes e cabos.'],
@@ -46,7 +39,6 @@ async function seed() {
       categorias[nome] = categoria
     }
 
-    // -------- Fornecedor de exemplo --------
     const [fornecedor] = await Fornecedor.findOrCreate({
       where: { cnpj: '11222333000181' },
       defaults: {
@@ -58,7 +50,6 @@ async function seed() {
       }
     })
 
-    // -------- Produtos de exemplo --------
     const produtosSeed = [
       ['EM-SM200', 'Sensor Magnético SM-200', 'Eletrônica', 89.90, 40],
       ['EM-C25', 'Contator C25', 'Elétrica', 129.90, 25],
@@ -103,7 +94,6 @@ async function seed() {
       produtos[codigoInterno] = produto
     }
 
-    // -------- Kits de exemplo --------
     const kitsSeed = [
       {
         nome: 'Kit Manutenção de Porta',

@@ -21,8 +21,8 @@ const pedidoRoutes = require('../routes/pedido.routes')
 const entregaRoutes = require('../routes/entrega.routes')
 const relatorioRoutes = require('../routes/relatorio.routes')
 
-app.use('/', authRoutes)                 // POST /login
-app.use('/usuario', usuarioRoutes)       // POST /usuario, GET /usuario/perfil, PUT /usuario/:id
+app.use('/', authRoutes)                 
+app.use('/usuario', usuarioRoutes)       
 app.use('/endereco', enderecoRoutes)
 app.use('/categoria', categoriaRoutes)
 app.use('/fornecedor', fornecedorRoutes)
@@ -37,7 +37,6 @@ app.get('/', (req, res) => {
   res.status(200).json({ message: 'API ElevManutenção funcionando!' })
 })
 
-// Handler simples para rota não encontrada
 app.use((req, res) => {
   res.status(404).json({ erro: 'Rota não encontrada' })
 })
