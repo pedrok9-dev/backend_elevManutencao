@@ -1,24 +1,17 @@
-require('dotenv').config()
+const { SERVIDOR } = require('./src/config/ambiente')
+const criarBancoSeNaoExistir = require('./src/db/criarBanco')
+require('./src/models/rel')
 const app = require('./src/server/app')
 const conn = require('./src/db/conn')
 
-const PORT = process.env.PORT || 3000
-const HOST = process.env.HOST || '0.0.0.0'
-
-const isProduction = process.env.NODE_ENV === 'production'
-
 async function startServer() {
     try{
-        if(!isProduction){
-            await conn.sync({alter: true})
-            console.log('Banco sincronizado (dev) com { alter: true }')
-        }else{
-            await conn.authenticate()
-            console.log('Banco autenticado (produção)')
-        }
+        await criarBancoSeNaoExistir()
+        await conn.sync({alter: true})
+        console.log('Banco sincronizado com { alter: true }')
 
-        app.listen(PORT, HOST, ()=>{
-            console.log(`Servidor rodando em http://${HOST}:${PORT}`)
+        app.listen(SERVIDOR.port, SERVIDOR.host, ()=>{
+            console.log(`Servidor rodando em http://${SERVIDOR.host}:${SERVIDOR.port}`)
         })
     }catch(err){
         console.error('Erro ao conectar ao banco ou iniciar o servidor:', err)

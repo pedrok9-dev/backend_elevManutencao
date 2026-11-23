@@ -1,3 +1,5 @@
+require('./src/config/ambiente')
+const criarBancoSeNaoExistir = require('./src/db/criarBanco')
 const conn = require('./src/db/conn')
 
 const {
@@ -17,6 +19,7 @@ const {
 
 async function syncDataBase() {
   try {
+    await criarBancoSeNaoExistir()
     await conn.sync({ force: true })
 
     console.log('-----------------------------------------')

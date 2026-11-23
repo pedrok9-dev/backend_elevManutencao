@@ -4,6 +4,7 @@ const ItemKit = require('../models/ItemKit')
 const Produto = require('../models/Produto')
 const Estoque = require('../models/Estoque')
 const Categoria = require('../models/Categoria')
+const { salvarImagem, apagarImagem } = require('../utils/imagem')
 
 async function calcularDisponibilidade(kit) {
   if (!kit.itensKit || kit.itensKit.length === 0) return 0
@@ -17,14 +18,17 @@ async function calcularDisponibilidade(kit) {
 }
 
 async function criarKit(dados) {
-  const { idCategoria, nome, descricao, preco, imagem_url, itens } = dados
+  const { idCategoria, nome, descricao, preco, imagem_url, imagem, itens } = dados
 
   if (!nome || !preco) {
     throw new Error('Nome e preço do kit são obrigatórios')
   }
 
-  return await db.transaction(async (t) => {
-    const kit = await Kit.create({ idCategoria: idCategoria || null, nome, descricao, preco, imagem_url, ativo: true }, { transaction: t })
+  const urlImagem = imagem ? salvarImagem(imagem, 'kit') : (imagem_url || null)
+
+  try {
+    return await db.transaction(async (t) => {
+    const kit = await Kit.create({ idCategoria: idCategoria || null, nome, descricao, preco, imagem_url: urlImagem, ativo: true }, { transaction: t })
 
     if (Array.isArray(itens) && itens.length > 0) {
       for (const item of itens) {
@@ -36,7 +40,11 @@ async function criarKit(dados) {
     }
 
     return kit
-  })
+    })
+  } catch (err) {
+    if (imagem) apagarImagem(urlImagem)
+    throw err
+  }
 }
 
 async function listarKits({ apenasAtivos } = {}) {
@@ -95,7 +103,19 @@ async function atualizarKit(id, dados) {
   const kit = await Kit.findByPk(id)
   if (!kit) throw new Error('Kit não encontrado')
 
-  await kit.update(dados)
+  const campos = { ...dados }
+  delete campos.imagem
+  delete campos.remover_imagem
+
+  const antiga = kit.imagem_url
+  if (dados.imagem) {
+    campos.imagem_url = salvarImagem(dados.imagem, 'kit')
+  } else if (dados.remover_imagem) {
+    campos.imagem_url = null
+  }
+
+  await kit.update(campos)
+  if (campos.imagem_url !== undefined && campos.imagem_url !== antiga) apagarImagem(antiga)
   return kit
 }
 

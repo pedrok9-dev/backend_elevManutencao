@@ -3,9 +3,10 @@ const Produto = require('../models/Produto')
 const Categoria = require('../models/Categoria')
 const Fornecedor = require('../models/Fornecedor')
 const Estoque = require('../models/Estoque')
+const { salvarImagem, apagarImagem } = require('../utils/imagem')
 
 async function criarProduto(dados) {
-  const { idCategoria, idFornecedor, codigoInterno, nome, descricao, preco, unidade, imagem_url } = dados
+  const { idCategoria, idFornecedor, codigoInterno, nome, descricao, preco, unidade, imagem_url, imagem } = dados
 
   if (!idCategoria || !codigoInterno || !nome || !preco) {
     throw new Error('Categoria, código interno, nome e preço são obrigatórios')
@@ -20,17 +21,25 @@ async function criarProduto(dados) {
     throw new Error('Já existe um produto com esse código interno')
   }
 
-  const produto = await Produto.create({
-    idCategoria,
-    idFornecedor: idFornecedor || null,
-    codigoInterno,
-    nome,
-    descricao,
-    preco,
-    unidade: unidade || 'unidade',
-    imagem_url,
-    ativo: true
-  })
+  const urlImagem = imagem ? salvarImagem(imagem, 'produto') : (imagem_url || null)
+
+  let produto
+  try {
+    produto = await Produto.create({
+      idCategoria,
+      idFornecedor: idFornecedor || null,
+      codigoInterno,
+      nome,
+      descricao,
+      preco,
+      unidade: unidade || 'unidade',
+      imagem_url: urlImagem,
+      ativo: true
+    })
+  } catch (err) {
+    if (imagem) apagarImagem(urlImagem)
+    throw err
+  }
 
   await Estoque.create({
     idProduto: produto.codProduto,
@@ -93,7 +102,19 @@ async function atualizarProduto(id, dados) {
   const produto = await Produto.findByPk(id)
   if (!produto) throw new Error('Produto não encontrado')
 
-  await produto.update(dados)
+  const campos = { ...dados }
+  delete campos.imagem
+  delete campos.remover_imagem
+
+  const antiga = produto.imagem_url
+  if (dados.imagem) {
+    campos.imagem_url = salvarImagem(dados.imagem, 'produto')
+  } else if (dados.remover_imagem) {
+    campos.imagem_url = null
+  }
+
+  await produto.update(campos)
+  if (campos.imagem_url !== undefined && campos.imagem_url !== antiga) apagarImagem(antiga)
   return produto
 }
 
@@ -101,13 +122,22 @@ async function atualizarProdutoCompleto(id, dados) {
   const produto = await Produto.findByPk(id)
   if (!produto) throw new Error('Produto não encontrado')
 
-  const { idCategoria, codigoInterno, nome, descricao, preco, unidade, imagem_url, ativo } = dados
+  const { idCategoria, codigoInterno, nome, descricao, preco, unidade, ativo, imagem, remover_imagem } = dados
 
   if (!idCategoria || !codigoInterno || !nome || !preco) {
     throw new Error('Categoria, código interno, nome e preço são obrigatórios')
   }
 
-  await produto.update({ idCategoria, codigoInterno, nome, descricao, preco, unidade, imagem_url, ativo })
+  const antiga = produto.imagem_url
+  let novaUrl = antiga
+  if (imagem) {
+    novaUrl = salvarImagem(imagem, 'produto')
+  } else if (remover_imagem) {
+    novaUrl = null
+  }
+
+  await produto.update({ idCategoria, codigoInterno, nome, descricao, preco, unidade, imagem_url: novaUrl, ativo })
+  if (novaUrl !== antiga) apagarImagem(antiga)
   return produto
 }
 
